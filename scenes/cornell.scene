@@ -1,0 +1,32 @@
+# 简化 Cornell Box：三角形墙面 + 球体 + 面光源。
+# 背景设为 0，可突出室内全局照明；建议 spp >= 64。
+background 0.00 0.00 0.00
+camera 0 2.6 7.2  0 2.2 0  0 1 0  35 0.0 7.0
+
+material white lambertian 0.75 0.75 0.75
+material red lambertian 0.75 0.15 0.10
+material green lambertian 0.12 0.55 0.18
+material metalbox metal 0.75 0.70 0.65 0.03
+material glass dielectric 1.50
+material light light 1.00 0.88 0.70 8.0
+
+# floor
+triangle white -3 0 -3   3 0 -3   3 0 3
+triangle white -3 0 -3   3 0 3  -3 0 3
+# ceiling
+triangle white -3 5 -3   3 5 3   3 5 -3
+triangle white -3 5 -3  -3 5 3   3 5 3
+# back wall
+triangle white -3 0 -3   3 5 -3   3 0 -3
+triangle white -3 0 -3  -3 5 -3   3 5 -3
+# left/right walls
+triangle red -3 0 -3  -3 0 3  -3 5 3
+triangle red -3 0 -3  -3 5 3  -3 5 -3
+triangle green 3 0 -3   3 5 3   3 0 3
+triangle green 3 0 -3   3 5 -3  3 5 3
+# area light as two emissive triangles
+triangle light -0.9 4.98 -0.8   0.9 4.98 -0.8   0.9 4.98 0.8
+triangle light -0.9 4.98 -0.8   0.9 4.98 0.8  -0.9 4.98 0.8
+
+sphere glass -1.0 0.8 -0.7 0.8
+sphere metalbox 1.1 0.9 0.4 0.9

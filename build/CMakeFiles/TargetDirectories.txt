@@ -1,0 +1,3 @@
+/home/zhang/公共/ParallelRayTracer/build/CMakeFiles/raytracer.dir
+/home/zhang/公共/ParallelRayTracer/build/CMakeFiles/edit_cache.dir
+/home/zhang/公共/ParallelRayTracer/build/CMakeFiles/rebuild_cache.dir

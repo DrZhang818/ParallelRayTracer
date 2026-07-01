@@ -1,0 +1,19 @@
+# 基础随机球体场景：适合展示材质、抗锯齿、OpenMP 加速。
+background 0.70 0.80 1.00
+camera 13 2 3  0 0 0  0 1 0  20 0.10 10.0
+
+material ground lambertian 0.50 0.50 0.50
+material center lambertian 0.10 0.20 0.50
+material left_glass dielectric 1.50
+material right_metal metal 0.80 0.60 0.20 0.05
+material red lambertian 0.80 0.20 0.20
+material blue lambertian 0.20 0.30 0.80
+material soft_light light 1.00 0.90 0.75 2.5
+
+sphere ground 0 -1000 0 1000
+sphere center 0 1 0 1.0
+sphere left_glass -2 1 0 1.0
+sphere right_metal 2 1 0 1.0
+sphere red -4 0.5 -1.3 0.5
+sphere blue 4 0.5 -1.2 0.5
+sphere soft_light 0 7 1 1.5

@@ -1,0 +1,13 @@
+# OBJ 载入示例：包含一个 cube.obj 三角网格。
+background 0.70 0.80 1.00
+camera 4 2.5 5  0 0.8 0  0 1 0  35 0.0 5.0
+
+material ground lambertian 0.50 0.50 0.50
+material meshmat metal 0.65 0.70 0.80 0.05
+material glass dielectric 1.50
+material light light 1.00 0.90 0.70 2.0
+
+sphere ground 0 -1000 0 1000
+sphere glass -1.6 0.7 0 0.7
+sphere light 0 6 0 1.5
+obj meshmat cube.obj 1.2 0 1.2 0

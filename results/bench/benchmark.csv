@@ -1,0 +1,7 @@
+threads,use_bvh,scheduler,width,height,spp,depth,primitives,bvh_build_seconds,render_seconds,output
+1,True,dynamic,400,225,4,4,422,0.000167,0.452202,results/bench/bench_t1_bvh_dynamic.ppm
+2,True,dynamic,400,225,4,4,422,0.000208,0.230801,results/bench/bench_t2_bvh_dynamic.ppm
+4,True,dynamic,400,225,4,4,422,0.000169,0.111621,results/bench/bench_t4_bvh_dynamic.ppm
+8,True,dynamic,400,225,4,4,422,0.000178,0.125856,results/bench/bench_t8_bvh_dynamic.ppm
+1,False,dynamic,400,225,4,4,422,0.000000,1.298593,results/bench/bench_t1_nobvh_dynamic.ppm
+8,False,dynamic,400,225,4,4,422,0.000000,0.405318,results/bench/bench_t8_nobvh_dynamic.ppm
