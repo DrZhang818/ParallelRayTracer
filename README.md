@@ -175,6 +175,19 @@ convert results/spheres.ppm results/spheres.png
 | `--progress` | 显示渲染进度 | 默认关闭 |
 | `--help` | 显示帮助信息 | - |
 
+## 功能验证
+
+| 功能 | 验证方式 |
+|---|---|
+| 球体、金属、玻璃、自发光材质 | 运行 `scenes/spheres.scene` |
+| 三角形、面光源、Cornell Box | 运行 `scenes/cornell.scene` |
+| OBJ 网格模型 | 运行 `scenes/mesh_demo.scene` |
+| 多采样抗锯齿 | 对比 `--spp 1` 与 `--spp 64` 的输出图像 |
+| 最大反弹深度 | 对比 `--depth 1` 与 `--depth 10` 的输出图像 |
+| BVH 加速 | 对比默认运行与 `--no-bvh` 的 `render_seconds` |
+| OpenMP 并行 | 对比 `--threads 1,2,4,8` 的 `render_seconds` |
+| OpenMP 调度策略 | 对比 `--scheduler static/dynamic/guided` 的运行时间 |
+
 ## 性能测试
 
 运行性能测试脚本：
