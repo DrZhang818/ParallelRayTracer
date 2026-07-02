@@ -1,68 +1,74 @@
-# ParallelRayTracer：并行光线追踪渲染器
+# ParallelRayTracer
 
-这是为“高性能计算导论”课程设计准备的 C++17 项目代码。当前压缩包只包含工程代码、场景、运行脚本和说明，不包含 PPT 或实验报告。
+基于 C++17 实现的 CPU 并行光线追踪渲染器。
 
-## 1. 已实现内容
+项目实现了基础路径追踪、BVH 加速结构、OpenMP 图像块并行渲染以及简单场景文件解析，可用于光线追踪算法验证和高性能计算课程实验。
 
-- 基础路径追踪 / 光线追踪渲染流程
-  - 相机模型、抗锯齿多采样、递归反弹
-  - 球体求交
-  - 三角形求交
-  - 简单 OBJ 三角网格载入
-- 材质系统
+## 功能特性
+
+- 基础路径追踪渲染流程
+  - 透视相机
+  - 多采样抗锯齿
+  - 递归光线反弹
+  - 可配置最大反弹深度
+- 几何体支持
+  - 球体
+  - 三角形
+  - 简单 OBJ 网格模型
+- 材质支持
   - Lambertian 漫反射材质
-  - Metal 金属反射材质
+  - Metal 金属材质
   - Dielectric 玻璃 / 折射材质
   - Light 自发光材质
-- BVH 加速结构
+- 加速结构
   - AABB 包围盒
-  - 基于图元中心的最长轴划分
+  - BVH 构建
   - 迭代式 BVH 遍历
-  - 支持 `--no-bvh` 关闭 BVH 做性能对照
-- OpenMP 并行渲染
-  - 图像 tile 分块并行
-  - 支持 `static / dynamic / guided` 调度策略
+  - 支持关闭 BVH 进行暴力求交对比
+- 并行计算
+  - 基于 OpenMP 的图像块并行渲染
   - 支持指定线程数
-- 性能测试脚本
-  - 自动测试不同线程数、BVH/非 BVH 的运行时间
-  - 输出 `benchmark.csv`
+  - 支持 `static`、`dynamic`、`guided` 调度策略
+- 性能测试
+  - 支持不同线程数对比
+  - 支持 BVH / 非 BVH 对比
+  - 自动生成 CSV 测试结果
 
-## 2. 目录结构
+## 目录结构
 
 ```text
 ParallelRayTracer/
 ├── CMakeLists.txt
+├── LICENSE
 ├── README.md
 ├── include/              # 头文件
 ├── src/                  # 源代码
-├── scenes/               # 示例场景
-│   ├── spheres.scene
-│   ├── cornell.scene
-│   ├── many_spheres.scene
-│   ├── mesh_demo.scene
-│   └── cube.obj
-├── scripts/
-│   └── benchmark.py
-└── results/              # 输出目录
+├── scenes/               # 示例场景与 OBJ 文件
+├── scripts/              # 性能测试脚本
+└── results/              # 渲染结果与测试输出
 ```
 
-## 3. 编译环境
+## 环境要求
 
-推荐环境：
+- CMake 3.12 或更高版本
+- 支持 C++17 的编译器
+- OpenMP，可选但推荐开启
+- Python 3，用于运行性能测试脚本
 
-- Linux / macOS / Windows + MinGW 或 MSVC
-- CMake >= 3.12
-- C++17 编译器
-- OpenMP，可选但强烈建议开启
-
-Linux 示例：
+Ubuntu / Debian 环境下可使用：
 
 ```bash
 sudo apt update
-sudo apt install -y build-essential cmake
+sudo apt install -y build-essential cmake python3
 ```
 
-## 4. 编译方法
+如需将 PPM 图片转换为 PNG，可安装 ImageMagick：
+
+```bash
+sudo apt install -y imagemagick
+```
+
+## 编译方法
 
 在项目根目录执行：
 
@@ -71,9 +77,16 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
 ```
 
-如果 CMake 找到 OpenMP，会自动启用多线程；如果没有找到，仍可编译串行版本。
+如果系统支持 OpenMP，CMake 会自动启用多线程渲染。
 
-## 5. 快速运行
+如需关闭 OpenMP：
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=OFF
+cmake --build build -j
+```
+
+## 快速运行
 
 渲染基础球体场景：
 
@@ -81,116 +94,156 @@ cmake --build build -j
 ./build/raytracer \
   --scene scenes/spheres.scene \
   --output results/spheres.ppm \
-  --width 800 --height 450 \
-  --spp 32 --depth 8 \
+  --width 800 \
+  --height 450 \
+  --spp 32 \
+  --depth 8 \
   --threads 8 \
-  --scheduler dynamic
+  --scheduler dynamic \
+  --progress
 ```
 
-渲染简化 Cornell Box：
+输出文件：
 
-```bash
-./build/raytracer \
-  --scene scenes/cornell.scene \
-  --output results/cornell.ppm \
-  --width 800 --height 600 \
-  --spp 64 --depth 10 \
-  --threads 8
+```text
+results/spheres.ppm
 ```
 
-测试 OBJ 三角网格载入：
-
-```bash
-./build/raytracer \
-  --scene scenes/mesh_demo.scene \
-  --output results/mesh_demo.ppm \
-  --width 800 --height 450 \
-  --spp 32 --depth 8 \
-  --threads 8
-```
-
-输出格式是 PPM。大多数图片查看器、ImageMagick、GIMP、Photoshop 都可以打开。也可以转换成 PNG：
+转换为 PNG：
 
 ```bash
 convert results/spheres.ppm results/spheres.png
 ```
 
-## 6. 命令行参数
+## 示例场景
 
-```text
---scene <path>       场景文件，默认 scenes/spheres.scene
---output <path>      输出 PPM 图片，默认 results/output.ppm
---width <int>        图像宽度，默认 800
---height <int>       图像高度，默认 450
---spp <int>          每像素采样数，默认 16
---depth <int>        最大反弹深度，默认 8
---threads <int>      OpenMP 线程数，0 表示运行库默认，默认 0
---tile <int>         tile 大小，默认 16
---scheduler <name>   OpenMP 调度策略：static / dynamic / guided，默认 dynamic
---leaf-size <int>    BVH 叶子节点最大图元数，默认 4
---no-bvh             关闭 BVH，使用暴力求交
---seed <int>         随机种子，默认 20260701
---progress           显示渲染进度
+### 球体场景
+
+```bash
+./build/raytracer \
+  --scene scenes/spheres.scene \
+  --output results/spheres.ppm \
+  --width 800 \
+  --height 450 \
+  --spp 32 \
+  --depth 8 \
+  --threads 8
 ```
 
-## 7. 性能实验示例
+### Cornell Box 场景
 
-### 7.1 比较 OpenMP 线程数
+```bash
+./build/raytracer \
+  --scene scenes/cornell.scene \
+  --output results/cornell.ppm \
+  --width 800 \
+  --height 600 \
+  --spp 64 \
+  --depth 10 \
+  --threads 8
+```
+
+### OBJ 网格场景
+
+```bash
+./build/raytracer \
+  --scene scenes/mesh_demo.scene \
+  --output results/mesh_demo.ppm \
+  --width 800 \
+  --height 450 \
+  --spp 32 \
+  --depth 8 \
+  --threads 8
+```
+
+## 命令行参数
+
+| 参数 | 说明 | 默认值 |
+|---|---|---|
+| `--scene <path>` | 输入场景文件 | `scenes/spheres.scene` |
+| `--output <path>` | 输出 PPM 图片路径 | `results/output.ppm` |
+| `--width <int>` | 图像宽度 | `800` |
+| `--height <int>` | 图像高度 | `450` |
+| `--spp <int>` | 每像素采样数 | `16` |
+| `--depth <int>` | 最大光线反弹深度 | `8` |
+| `--threads <int>` | OpenMP 线程数，`0` 表示使用运行库默认值 | `0` |
+| `--tile <int>` | 图像块大小 | `16` |
+| `--scheduler <name>` | OpenMP 调度策略：`static`、`dynamic`、`guided` | `dynamic` |
+| `--leaf-size <int>` | BVH 叶子节点最大图元数 | `4` |
+| `--no-bvh` | 关闭 BVH，使用暴力求交 | 默认启用 BVH |
+| `--seed <int>` | 随机种子 | `20260701` |
+| `--progress` | 显示渲染进度 | 默认关闭 |
+| `--help` | 显示帮助信息 | - |
+
+## 性能测试
+
+运行性能测试脚本：
 
 ```bash
 python3 scripts/benchmark.py \
   --exe build/raytracer \
   --scene scenes/many_spheres.scene \
-  --width 400 --height 225 \
-  --spp 4 --depth 4 \
+  --width 400 \
+  --height 225 \
+  --spp 4 \
+  --depth 4 \
   --threads 1,2,4,8 \
   --schedulers dynamic
 ```
 
-脚本会输出：
+测试结果会输出到：
 
 ```text
 results/bench/benchmark.csv
 ```
 
-CSV 中包含：
+CSV 文件中包含以下信息：
 
 - 线程数
-- 是否使用 BVH
-- 调度策略
+- 是否启用 BVH
+- OpenMP 调度策略
+- 图像分辨率
+- 每像素采样数
+- 最大反弹深度
 - 图元数量
 - BVH 构建时间
 - 渲染时间
+- 输出文件路径
 
-### 7.2 单独比较 BVH 和暴力求交
+## BVH 对比实验
 
-使用 BVH：
+启用 BVH：
 
 ```bash
-./build/raytracer --scene scenes/many_spheres.scene --output results/bvh.ppm --width 400 --height 225 --spp 4 --depth 4 --threads 8
+./build/raytracer \
+  --scene scenes/many_spheres.scene \
+  --output results/bvh.ppm \
+  --width 400 \
+  --height 225 \
+  --spp 4 \
+  --depth 4 \
+  --threads 8
 ```
 
 关闭 BVH：
 
 ```bash
-./build/raytracer --scene scenes/many_spheres.scene --output results/no_bvh.ppm --width 400 --height 225 --spp 4 --depth 4 --threads 8 --no-bvh
+./build/raytracer \
+  --scene scenes/many_spheres.scene \
+  --output results/no_bvh.ppm \
+  --width 400 \
+  --height 225 \
+  --spp 4 \
+  --depth 4 \
+  --threads 8 \
+  --no-bvh
 ```
 
-程序会在终端打印类似信息：
+通过比较两次运行的 `render_seconds`，可以分析 BVH 加速结构对求交性能的影响。
 
-```text
-output=results/bvh.ppm
-resolution=400x225
-spp=4 depth=4
-threads=8 scheduler=dynamic tile=16
-primitives=417 use_bvh=yes bvh_nodes=...
-bvh_build_seconds=...
-render_seconds=...
-```
+## 场景文件格式
 
-## 8. 场景文件格式
-
-场景文件是纯文本，支持以下命令。
+场景文件为纯文本格式。
 
 ### 相机
 
@@ -198,7 +251,7 @@ render_seconds=...
 camera lookfrom_x lookfrom_y lookfrom_z  lookat_x lookat_y lookat_z  vup_x vup_y vup_z  vfov aperture focus_dist
 ```
 
-### 背景
+### 背景颜色
 
 ```text
 background r g b
@@ -221,20 +274,25 @@ triangle material ax ay az bx by bz cx cy cz
 obj material path scale tx ty tz
 ```
 
-`obj` 的路径相对于当前 `.scene` 文件所在目录。
+其中，`obj` 的路径相对于当前 `.scene` 文件所在目录。
 
-## 9. 后续写报告时可重点分析
+## 实现说明
 
-虽然本压缩包未包含报告，但代码已经预留了比较实验所需的功能。后续报告可以围绕这些点展开：
+程序启动后会先解析场景文件，生成相机、材质和图元数据。渲染开始前，程序会根据场景中的图元构建 BVH 加速结构。渲染阶段，每条相机光线通过 BVH 查找最近交点，并根据命中的材质继续进行反射、折射或漫反射采样。
 
-1. 光线追踪中最耗时的是光线与大量图元求交。
-2. BVH 使用层次包围盒减少无效求交。
-3. 像素 / tile 之间相互独立，适合共享内存多线程并行。
-4. `dynamic` 调度能缓解不同像素路径深度和求交次数不同造成的负载不均衡。
-5. 实验指标建议使用渲染时间、加速比、并行效率、BVH 加速比。
+并行渲染采用图像块划分方式。程序将整张图像切分为多个 tile，再使用 OpenMP 将这些 tile 分配给不同线程计算。由于不同像素之间不存在数据依赖，这种方式可以较好地利用多核 CPU 资源。
 
-## 10. 备注
+## 输出格式
 
-- 项目没有依赖外部图形库，方便在课程服务器或普通 Linux 环境上编译。
-- 为了降低复杂度，输出使用 ASCII PPM；后续可以自行加入 `stb_image_write` 输出 PNG。
-- CUDA / MPI 版本未放入当前压缩包，避免工程复杂度过高；本版本主线是 CPU OpenMP + BVH。
+渲染结果默认保存为 ASCII PPM 格式。  
+PPM 格式实现简单，不依赖额外图像库，适合课程实验和跨平台运行。
+
+转换为 PNG 示例：
+
+```bash
+convert results/spheres.ppm results/spheres.png
+```
+
+## 许可证
+
+本项目使用 MIT License。
